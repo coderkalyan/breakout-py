@@ -21,7 +21,7 @@ PADDLEY = 350
 SPAWNCHANCE = 35 # the odds that a ball will spawn another ball on contact
 def setup():
     global DISPLAYSURF,font,FPSCLOCK,FPS,paddleX,balls,lives,score,callback,renderMode
-    
+
     pygame.init()
     pygame.font.init()
     pygame.mixer.init()
@@ -36,16 +36,16 @@ def setup():
     font = pygame.font.Font('Roboto-Medium.ttf', 30)
 
     FPSCLOCK = pygame.time.Clock()
-    FPS = 150 # wow
+    FPS = 60
 
     mousex,mousey = pygame.mouse.get_pos()
     paddleX = mousex
-    
+
     reset()
-    
+
     lives = 3
     score = 0
-    
+
     build() # # setup the bricks
 
     # this 2d list contains callbacks - just to keep track
@@ -81,11 +81,13 @@ def reset():
     # there are multiple balls
     # we start out with one
     # the ball contains centerX,centerY,velocity X, and velocity Y
-    balls = [[200,200,1,-1]]
+    balls = [[200,200,2,-2]]
 
     renderMode = 1
-    
+
 def sign(n):
+    # returns 2 if n > 0 else -2
+    return n // abs(n) * 2
     if n > 0:
         return 1
     else:
@@ -95,7 +97,7 @@ def render(mode):
     if not DISPLAYSURF:
         return
     DISPLAYSURF.fill(BGCOLOR)   # first clear the screen
-    
+
     # finished(breakout) render mode - draw the rainbow, score, lives, and breakout text
     if mode == 0:
         # draw the rainbow
@@ -118,7 +120,7 @@ def render(mode):
         # display the score
         scoreSurface = font.render(str(score), True, WHITE)
         DISPLAYSURF.blit(scoreSurface,(10,10))
-    
+
     # regular render mode - draw the bricks, paddle, and all the balls
     elif mode == 1:
         # draw the paddle
@@ -129,7 +131,7 @@ def render(mode):
             # pygame.draw.circle(DISPLAYSURF,BALLCOLOR,(int(ball[0]),int(ball[1])),8)
             gfxdraw.filled_circle(DISPLAYSURF, int(ball[0]), int(ball[1]), 8, BALLCOLOR)
             gfxdraw.aacircle(DISPLAYSURF, int(ball[0]), int(ball[1]), 8, BALLCOLOR)
-            
+
 
         # display lives text
         livesSurface = font.render("LIVES: " + str(lives), True, WHITE)
@@ -149,21 +151,21 @@ def render(mode):
         gameOverSurfaceSize = font.size("GAME OVER")
         gameOverSurface = font.render("GAME OVER", True, WHITE)
         DISPLAYSURF.blit(gameOverSurface,(400-gameOverSurfaceSize[0]/2,200-gameOverSurfaceSize[1]/2))
-                    
+
         # display the score text
         scoreText = "SCORE: " + str(score)
         scoreSurfaceSize = font.size(scoreText)
         scoreSurface = font.render(scoreText, False, WHITE)
         DISPLAYSURF.blit(scoreSurface,(400-scoreSurfaceSize[0]/2,250-scoreSurfaceSize[1]/2))
-        
+
     pygame.display.update()
 
-# quit the program  
+# quit the program
 def terminate():
     terminated = True
     pygame.quit()
     sys.exit()
-    
+
 # check for ball contact with the paddle
 def contactPaddle(i):
     if balls[i][1] == PADDLEY - 8 and balls[i][0] >= paddleX and balls[i][0] <= paddleX + 150:
@@ -202,16 +204,16 @@ def contactBricks(i):
             if not brick[7]:
                 balls.append([balls[i][0],balls[i][1],balls[i][2]*-1,balls[i][3]])
             bricks.remove(brick)
-            
+
 # check for ball contact with void at bottom, which means death of that ball
 def contactVoid(i):
     if balls[i][1] > 408:
         balls.pop(i)
 
-# check for all balls are dead, which means reset or gameover  
+# check for all balls are dead, which means reset or gameover
 def checkDead():
     global callback,renderMode,lives
-    
+
     if len(balls) == 0:
         if lives > 1:
             lives -= 1
@@ -224,7 +226,7 @@ def checkDead():
 def updatePos(i):
     balls[i][0] += balls[i][2]
     balls[i][1] += balls[i][3]
-        
+
 def updateBalls():
     for i in range(0,len(balls)):
         # we are trying all of this - this ball index may not exist if it is deleted during this function
@@ -242,9 +244,9 @@ def main():
     global paddleX,renderMode,balls,score
     setup()
 
-    # main game loop   
+    # main game loop
     while True:
-        
+
         # update ball positions
         updateBalls()
 
@@ -258,7 +260,7 @@ def main():
         # display the screen
         render(renderMode)
 
-        # event handler - check for 
+        # event handler - check for
         for event in pygame.event.get():
             if event.type == QUIT:
                 pygame.quit()
@@ -268,7 +270,7 @@ def main():
                 if mousex < 650:
                     paddleX = mousex
 
-        # random cheat   
+        # random cheat
         pressed = pygame.key.get_pressed()
         if pressed[K_LEFT] and paddleX > 0:
             paddleX -= 2
